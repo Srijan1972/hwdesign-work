@@ -36,6 +36,7 @@ commands, or between activations.
   the whole 32-bit word is the value, and it must be less than q. On output
   the value is in the low 23 bits and the upper 9 bits are zero.
 - nbatch is 1 to 16. The kernel must handle a batch of 16 polynomials.
+- The stream is 32 bits wide; no other width is needed.
 - Throughput: each of the 8 butterfly stages processes one butterfly per
   clock (128 butterflies in about 128 cycles), so the butterflies of one
   polynomial take about 1024 cycles. With 256 cycles to read a polynomial and
@@ -44,6 +45,16 @@ commands, or between activations.
     most 27,200 cycles (co-simulation latency of that activation);
   - an activation with one NTT command of nbatch = 1 and END completes in at
     most 1,700 cycles.
+  The latency of an activation is Vitis's co-simulation latency of that
+  kernel call, ap_start to ap_done (result.transaction.rpt), including the
+  END header. "One butterfly per clock" means the butterfly loop is at II = 1
+  in the synthesis report. Polynomials may be processed one at a time (read,
+  transform, write); overlapping them is not required.
+- The butterfly loop must reach II = 1. Each butterfly reads two words and
+  writes two, so give each stage its own RAM ports for both reads and both
+  writes (for example, the input buffer read and the output buffer written
+  directly by each stage's loop, not through one function shared by every
+  stage). This is part of the design, not timing closure.
 
 ## Commands and parameters
 - `NTT`: the header carries cmd_type, tx_id and nbatch. It is followed by
@@ -51,11 +62,19 @@ commands, or between activations.
   256th word. The response is a response header echoing tx_id, then nbatch
   output bursts, one per polynomial in input order, each 256 words with TLAST
   on its 256th word.
-- `END`: a header alone. The kernel returns with a clear status.
+- `END`: a header alone. The kernel returns with a clear status. END's tx_id
+  and nbatch are ignored: an END with any nbatch is not an error.
 
 nbatch = 0 and nbatch > 16 are invalid (BAD_PARAM). A cmd_type that is neither
-NTT nor END is invalid (BAD_CMD). Both are checked from the header, before
-any data is read and before anything is written for the command.
+NTT nor END is invalid (BAD_CMD); the value 0 is not a command, so an
+all-zero header word is BAD_CMD, not END. Both are checked from the header,
+before any data is read and before anything is written for the command.
+
+The command header is a fixed-length message: its TLAST is not checked, and
+a header with or without TLAST is accepted. Only the polynomial bursts are
+framed by TLAST. The response header is written as soon as the command
+header passes its checks, before any of the command's data is read, so a
+data error in polynomial 0 leaves the response header alone on the output.
 
 ## Errors
 Errors go in AXI-Lite status registers (halted, error code, tx_id).  On an
@@ -99,13 +118,17 @@ The scenarios:
 - edge values: all coefficients q-1, all 0, alternating 0 and q-1, and the
   hand-computed impulses above, inside one batch.
 - an activation that is END alone.
-- one activation per error: BAD_CMD; BAD_PARAM with nbatch = 0 and with
-  nbatch = 17; BAD_COEFF with value q, and with 0xFFFFFFFF, in a later
-  polynomial of a batch; TLAST_EARLY in polynomial 2 of a batch of 3;
-  TLAST_MISSING in polynomial 1 of a batch of 2; a word that is both >= q
-  and early-TLAST; an error in the second command of an activation, after a
-  first command succeeded. Each error activation is followed by a fresh
-  activation that must pass.
+- one activation per error: BAD_CMD with an unknown opcode and with opcode
+  0; BAD_PARAM with nbatch = 0 and with nbatch = 17; BAD_COEFF with value q,
+  and with 0xFFFFFFFF, in a later polynomial of a batch; TLAST_EARLY in
+  polynomial 2 of a batch of 3; TLAST_MISSING in polynomial 1 of a batch of
+  2, and in polynomial 0 of a batch of 2 (polynomial 1 must stay unread); a
+  word that is both >= q and early-TLAST, and word 255 >= q with no TLAST;
+  an error in the second command of an activation, after a first command
+  succeeded. Each error activation is followed by a fresh activation that
+  must pass.
+- an END header with a nonzero nbatch, and command headers sent without
+  TLAST, in an activation that must pass.
 - the two timing activations of the throughput target.
 
 Compare the model, C simulation and co-simulation bit for bit.  Run
@@ -143,3 +166,10 @@ this folder to be committed: a reviewer opens them to check results.md.
 | Version | Change | Why |
 | --- | --- | --- |
 | 1 | First version | |
+| 2 | The butterfly loop must reach II = 1, with each stage given its own RAM ports for its two reads and two writes | Run 1 missed both throughput targets (2,662 and 42,457 cycles) at II = 2: its Open Item 1 traced it to one write port shared by both butterfly outputs, and named the fix |
+| 2 | END's tx_id and nbatch are ignored; an END with any nbatch is not an error | Run 1 had to choose (Assumption 1); I kept its choice |
+| 2 | Command-header TLAST is not checked; only polynomial bursts are framed | Run 1 had to choose which TLASTs are errors (Assumption 2); I kept its choice |
+| 2 | The response header goes out right after the header checks, before any data | Run 1 had to choose what is on the output before a data error in polynomial 0 (Assumption 3); I kept its choice |
+| 2 | Latency is Vitis's ap_start-to-ap_done cosim latency, including END; "one butterfly per clock" is II = 1 in synthesis; polynomials may be processed one at a time | Run 1 had to interpret how the throughput targets are measured (Assumptions 4, 5, 7); I kept its reading |
+| 2 | Opcode 0 is not a command (BAD_CMD); the stream is 32 bits only | Run 1 chose both (Assumptions 6, 8); I kept them |
+| 2 | Added the scenarios run 1 added on its own, and one with END nbatch != 0 and headers without TLAST | Run 1's Assumption 9 added three error scenarios; the new rules above need a passing scenario of their own |
