@@ -1,0 +1,7 @@
+REJECTED  natural-order output [single]: ['burst 1: 256 words, expected 256; first difference at word 1']
+REJECTED  error path does not halt [tlast_early]: ['halted = 0, expected 1', 'error = 0, expected 1', 'tx_id = 0, expected 80']
+REJECTED  partial polynomial left open after an early TLAST [tlast_early]: ['the output burst in progress at the error was not closed with TLAST', '4 bursts, expected 3']
+REJECTED  kernel drains its input after BAD_PARAM [bad_param_17]: ['unread_words = 0, expected 4353']
+REJECTED  one output not reduced mod q [edge_values]: ['burst 1: 256 words, expected 256; first difference at word 0']
+
+ALL REJECTED

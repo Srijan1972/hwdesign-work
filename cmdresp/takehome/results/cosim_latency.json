@@ -1,0 +1,50 @@
+{
+  "per_activation_cycles": {
+    "single": 2662,
+    "batch16": 42457,
+    "param_change": 58390,
+    "edge_values": 21233,
+    "end_only": 4,
+    "bad_cmd": 4,
+    "bad_cmd_recover": 5315,
+    "bad_cmd_zero": 4,
+    "bad_cmd_zero_recover": 5315,
+    "bad_param_0": 4,
+    "bad_param_0_recover": 5315,
+    "bad_param_17": 4,
+    "bad_param_17_recover": 5315,
+    "bad_coeff_q": 2763,
+    "bad_coeff_q_recover": 5315,
+    "bad_coeff_ffff": 2918,
+    "bad_coeff_ffff_recover": 5315,
+    "tlast_early": 5415,
+    "tlast_early_recover": 5315,
+    "tlast_missing": 5312,
+    "tlast_missing_recover": 5315,
+    "tlast_missing_first": 2659,
+    "tlast_missing_first_recover": 5315,
+    "coeff_and_early": 59,
+    "coeff_and_early_recover": 5315,
+    "coeff_and_missing": 265,
+    "coeff_and_missing_recover": 5315,
+    "second_cmd_error": 7983,
+    "second_cmd_error_recover": 5315
+  },
+  "targets": {
+    "nbatch1": {
+      "scenario": "single",
+      "required_max_cycles": 1700,
+      "measured_cycles": 2662,
+      "verdict": "FAIL",
+      "source": "reports/result.transaction.rpt"
+    },
+    "nbatch16": {
+      "scenario": "batch16",
+      "required_max_cycles": 27200,
+      "measured_cycles": 42457,
+      "verdict": "FAIL",
+      "source": "reports/result.transaction.rpt"
+    }
+  },
+  "source": "reports/result.transaction.rpt (transaction k = scenario k of data/scenarios.txt)"
+}

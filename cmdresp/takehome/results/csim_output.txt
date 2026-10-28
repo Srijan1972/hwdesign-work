@@ -1,0 +1,72 @@
+
+****** vitis-run v2026.1 (64-bit)
+  **** SW Build 6497934 on 2026-06-16-10:22:25
+  **** Start of session at: Wed Oct 28 10:35:33 2026
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+  **** HLS Build v2026.1 6493734
+Sourcing Tcl script '/home/sg9109/hwdesign-work/cmdresp/takehome/run.tcl'
+INFO: [HLS 200-1510] Running: open_project -reset prj_ntt 
+WARNING: [HLS 200-2182] The 'prj_ntt' project will not automatically appear within Vitis IDE workspaces and is meant only for TCL batch use.  Please use open_component instead of open_project/open_solution to generate Vitis IDE compatible component files and directory structure.
+Resolution: For help on HLS 200-2182 see docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-2182.html
+INFO: [HLS 200-10] Creating and opening solution '/home/sg9109/hwdesign-work/cmdresp/takehome/prj_ntt'.
+INFO: [HLS 200-1510] Running: set_top ntt 
+INFO: [HLS 200-1510] Running: add_files gen/ntt.cpp -cflags -I. 
+INFO: [HLS 200-10] Adding design file 'gen/ntt.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb ntt_tb.cpp -cflags -I. 
+INFO: [HLS 200-10] Adding test bench file 'ntt_tb.cpp' to the project
+INFO: [HLS 200-1510] Running: add_files -tb /home/sg9109/hwdesign-work/cmdresp/takehome/include/streamutils.cpp 
+INFO: [HLS 200-10] Adding test bench file '/home/sg9109/hwdesign-work/cmdresp/takehome/include/streamutils.cpp' to the project
+INFO: [HLS 200-1510] Running: open_solution -reset solution1 
+INFO: [HLS 200-10] Creating and opening solution '/home/sg9109/hwdesign-work/cmdresp/takehome/prj_ntt/solution1'.
+INFO: [HLS 200-10] Cleaning up the solution database.
+INFO: [HLS 200-1510] Running: set_part xc7z020clg484-1 
+INFO: [HLS 200-1611] Setting target device to 'xc7z020-clg484-1'
+INFO: [HLS 200-1510] Running: create_clock -period 10 
+INFO: [SYN 201-201] Setting up clock 'default' with a period of 10ns.
+INFO: [HLS 200-1510] Running: csim_design -argv /home/sg9109/hwdesign-work/cmdresp/takehome/data csim 
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [HLS 200-2191] C-Simulation will use clang-16 as the compiler
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../include/streamutils.cpp in debug mode
+   Compiling ../../../../ntt_tb.cpp in debug mode
+   Compiling ../../../../gen/ntt.cpp in debug mode
+   Generating csim.exe
+scenario single                       halted=0 error=0 tx_id=0 unread_words=0
+scenario batch16                      halted=0 error=0 tx_id=0 unread_words=0
+scenario param_change                 halted=0 error=0 tx_id=0 unread_words=0
+scenario edge_values                  halted=0 error=0 tx_id=0 unread_words=0
+scenario end_only                     halted=0 error=0 tx_id=0 unread_words=0
+scenario bad_cmd                      halted=1 error=4 tx_id=50 unread_words=514
+scenario bad_cmd_recover              halted=0 error=0 tx_id=0 unread_words=0
+scenario bad_cmd_zero                 halted=1 error=4 tx_id=51 unread_words=514
+scenario bad_cmd_zero_recover         halted=0 error=0 tx_id=0 unread_words=0
+scenario bad_param_0                  halted=1 error=3 tx_id=60 unread_words=258
+scenario bad_param_0_recover          halted=0 error=0 tx_id=0 unread_words=0
+scenario bad_param_17                 halted=1 error=3 tx_id=61 unread_words=4353
+scenario bad_param_17_recover         halted=0 error=0 tx_id=0 unread_words=0
+scenario bad_coeff_q                  halted=1 error=5 tx_id=70 unread_words=412
+scenario bad_coeff_q_recover          halted=0 error=0 tx_id=0 unread_words=0
+scenario bad_coeff_ffff               halted=1 error=5 tx_id=71 unread_words=1
+scenario bad_coeff_ffff_recover       halted=0 error=0 tx_id=0 unread_words=0
+scenario tlast_early                  halted=1 error=1 tx_id=80 unread_words=1
+scenario tlast_early_recover          halted=0 error=0 tx_id=0 unread_words=0
+scenario tlast_missing                halted=1 error=2 tx_id=90 unread_words=1
+scenario tlast_missing_recover        halted=0 error=0 tx_id=0 unread_words=0
+scenario tlast_missing_first          halted=1 error=2 tx_id=91 unread_words=257
+scenario tlast_missing_first_recover  halted=0 error=0 tx_id=0 unread_words=0
+scenario coeff_and_early              halted=1 error=5 tx_id=100 unread_words=257
+scenario coeff_and_early_recover      halted=0 error=0 tx_id=0 unread_words=0
+scenario coeff_and_missing            halted=1 error=5 tx_id=101 unread_words=1
+scenario coeff_and_missing_recover    halted=0 error=0 tx_id=0 unread_words=0
+scenario second_cmd_error             halted=1 error=1 tx_id=111 unread_words=1
+scenario second_cmd_error_recover     halted=0 error=0 tx_id=0 unread_words=0
+INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 5637
+INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-2161] Finished Command csim_design Elapsed time: 00:00:08; Allocated memory: 0.000 MB.
+WAVEFLOW_SUCCESS: ntt C simulation passed.
+INFO: [HLS 200-112] Total CPU user time: 9.15 seconds. Total CPU system time: 1.33 seconds. Total elapsed time: 10.89 seconds; peak allocated memory: 286.441 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 13s
+INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.

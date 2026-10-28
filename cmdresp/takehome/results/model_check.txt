@@ -1,0 +1,23 @@
+1. Hand-computed examples (ntt_eval)
+PASS  delta_0  got[0:4]=[1, 1, 1, 1] want[0:4]=[1, 1, 1, 1]
+PASS  (q-1)*delta_0  got[0:4]=[8380416, 8380416, 8380416, 8380416] want[0:4]=[8380416, 8380416, 8380416, 8380416]
+PASS  zero  got[0:4]=[0, 0, 0, 0] want[0:4]=[0, 0, 0, 0]
+PASS  delta_1[0:2]  got[0:4]=[1753, 8378664] want[0:4]=[1753, 8378664]
+PASS  delta_128  got[0:4]=[4808194, 4808194, 4808194, 4808194] want[0:4]=[4808194, 4808194, 4808194, 4808194]
+PASS  delta_1: w_hat[2i+1] == q - w_hat[2i] for all i
+
+2. Direct reference: the defining formula with Python integers
+PASS  random seed 2026 #0
+PASS  random seed 2026 #1
+PASS  random seed 2026 #2
+PASS  random seed 2026 #3
+PASS  all q-1
+PASS  alternating 0, q-1
+PASS  delta_255
+
+3. Convolution property: NTT(a*b mod X^256+1) == NTT(a) .* NTT(b) mod q
+PASS  random pair #0
+PASS  random pair #1
+PASS  random pair #2
+
+ALL PASS

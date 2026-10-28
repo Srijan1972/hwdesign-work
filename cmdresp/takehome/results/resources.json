@@ -1,0 +1,84 @@
+{
+  "top_name": "ntt",
+  "top": {
+    "bram": 5,
+    "dsp": 2,
+    "ff": 800,
+    "lut": 1829,
+    "uram": 0
+  },
+  "available": {
+    "bram": 280,
+    "dsp": 220,
+    "ff": 106400,
+    "lut": 53200,
+    "uram": 0
+  },
+  "modules": [
+    {
+      "key": "ntt_accel-d20eb6b5",
+      "path": "ntt",
+      "cls_name": "NttAccel",
+      "rtl_module": "ntt",
+      "resources": {
+        "bram": 5,
+        "dsp": 2,
+        "ff": 800,
+        "lut": 1829,
+        "uram": 0
+      },
+      "subblocks": {
+        "ntt_stage_Pipeline_STAGE_BFLY": {
+          "bram": 1,
+          "dsp": 2,
+          "ff": 471,
+          "lut": 785,
+          "uram": 0
+        }
+      }
+    }
+  ],
+  "unclaimed": {
+    "load_poly_32_s": {
+      "ff": 18,
+      "lut": 190,
+      "bram": 0,
+      "dsp": 0,
+      "uram": 0
+    },
+    "ntt_stage": {
+      "bram": 1,
+      "dsp": 2,
+      "ff": 512,
+      "lut": 869,
+      "uram": 0
+    },
+    "store_poly_32_s": {
+      "ff": 13,
+      "lut": 90,
+      "bram": 0,
+      "dsp": 0,
+      "uram": 0
+    }
+  },
+  "module_sum": {
+    "lut": 1829,
+    "ff": 800,
+    "dsp": 2,
+    "bram": 5,
+    "uram": 0
+  },
+  "integration": {
+    "bram": 0,
+    "dsp": 0,
+    "ff": 0,
+    "lut": 0,
+    "uram": 0
+  },
+  "params": {
+    "in_bw": 32,
+    "out_bw": 32
+  },
+  "synth_seconds": 0.0,
+  "filed_into": null
+}

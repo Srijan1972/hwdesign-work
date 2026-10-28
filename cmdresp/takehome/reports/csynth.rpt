@@ -1,0 +1,313 @@
+
+
+================================================================
+== Synthesis Summary Report of 'ntt'
+================================================================
++ General Information: 
+    * Date:           Wed Oct 28 10:36:22 2026
+    * Version:        2026.1 (Build 6493734 on Jun 16 2026)
+    * Project:        prj_ntt
+    * Solution:       solution1
+    * Product family: zynq
+    * Target device:  xc7z020-clg484-1
+    
+
+* Performance & Resource Estimates: 
++--------------------------------------+--------+-------------------+----------+---------+------+----------+---------+-----------+-------+---------+---------+-----------+-----------+-----+
+|                Modules               |  Issue |                   | Iteration|         | Trip |          |       Latency       |       |         |         |           |           |     |
+|                & Loops               |  Type  |   Violation Type  |  Latency | Interval| Count| Pipelined| (cycles)|    (ns)   | Slack |  BRAM   |   DSP   |     FF    |    LUT    | URAM|
++--------------------------------------+--------+-------------------+----------+---------+------+----------+---------+-----------+-------+---------+---------+-----------+-----------+-----+
+|+ ntt                                 |  Timing|                  -|         -|        -|     -|        no|        -|          -|  -1.33|   5 (1%)|  2 (~0%)|  800 (~0%)|  1829 (3%)|    -|
+| o CMDS                               |       -|                  -|     42778|        -|     -|        no|        -|          -|   7.30|        -|        -|          -|          -|    -|
+|  o POLYS                             |       -|                  -|      2673|        -|    16|        no|    42773|  4.277e+05|   7.30|        -|        -|          -|          -|    -|
+|   + load_poly_32_s                   |       -|                  -|         -|      257|     -|       yes|      257|  2.570e+03|   0.25|        -|        -|   18 (~0%)|  190 (~0%)|    -|
+|    o LOAD                            |       -|                  -|         1|        1|   256|       yes|      255|  2.550e+03|   7.30|        -|        -|          -|          -|    -|
+|   + store_poly_32_s                  |       -|                  -|         -|      258|     -|       yes|      258|  2.580e+03|   2.30|        -|        -|   13 (~0%)|   90 (~0%)|    -|
+|    o STORE                           |       -|                  -|         2|        1|   256|       yes|      256|  2.560e+03|   7.30|        -|        -|          -|          -|    -|
+|   o NTT_STAGES                       |       -|                  -|       538|        -|     4|        no|     2152|  2.152e+04|   7.30|        -|        -|          -|          -|    -|
+|    + ntt_stage                       |       -|                  -|         -|      267|     -|        no|      267|  2.670e+03|   0.15|  1 (~0%)|  2 (~0%)|  512 (~0%)|   869 (1%)|    -|
+|     + ntt_stage_Pipeline_STAGE_BFLY  |       -|                  -|         -|      265|     -|       yes|      265|  2.650e+03|   0.15|  1 (~0%)|  2 (~0%)|  471 (~0%)|   785 (1%)|    -|
+|      o STAGE_BFLY                    |      II|  Memory Dependency|        10|        2|   128|       yes|      263|  2.630e+03|   7.30|        -|        -|          -|          -|    -|
++--------------------------------------+--------+-------------------+----------+---------+------+----------+---------+-----------+-------+---------+---------+-----------+-----------+-----+
+    II Violation Information: docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-880.html
+    Name Prefix: '+' for module, 'o' for loop, '*' for dataflow
+
+
+================================================================
+== HW Interfaces
+================================================================
+* S_AXILITE Interfaces
++---------------+------------+---------------+--------+----------+
+| Interface     | Data Width | Address Width | Offset | Register |
++---------------+------------+---------------+--------+----------+
+| s_axi_control | 32         | 6             | 16     | 0        |
++---------------+------------+---------------+--------+----------+
+
+* S_AXILITE Registers
++---------------+-------------+--------+-------+--------+----------------------------------+----------------------------------------------------------------------+
+| Interface     | Register    | Offset | Width | Access | Description                      | Bit Fields                                                           |
++---------------+-------------+--------+-------+--------+----------------------------------+----------------------------------------------------------------------+
+| s_axi_control | CTRL        | 0x00   | 32    | RW     | Control signals                  | 0=AP_START 1=AP_DONE 2=AP_IDLE 3=AP_READY 7=AUTO_RESTART 9=INTERRUPT |
+| s_axi_control | GIER        | 0x04   | 32    | RW     | Global Interrupt Enable Register | 0=Enable                                                             |
+| s_axi_control | IP_IER      | 0x08   | 32    | RW     | IP Interrupt Enable Register     | 0=CHAN0_INT_EN 1=CHAN1_INT_EN                                        |
+| s_axi_control | IP_ISR      | 0x0c   | 32    | RW     | IP Interrupt Status Register     | 0=CHAN0_INT_ST 1=CHAN1_INT_ST                                        |
+| s_axi_control | halted      | 0x10   | 32    | R      | Data signal of halted            |                                                                      |
+| s_axi_control | halted_ctrl | 0x14   | 32    | R      | Control signal of halted         | 0=halted_ap_vld                                                      |
+| s_axi_control | error       | 0x20   | 32    | R      | Data signal of error             |                                                                      |
+| s_axi_control | error_ctrl  | 0x24   | 32    | R      | Control signal of error          | 0=error_ap_vld                                                       |
+| s_axi_control | tx_id       | 0x30   | 32    | R      | Data signal of tx_id             |                                                                      |
+| s_axi_control | tx_id_ctrl  | 0x34   | 32    | R      | Control signal of tx_id          | 0=tx_id_ap_vld                                                       |
++---------------+-------------+--------+-------+--------+----------------------------------+----------------------------------------------------------------------+
+
+* AXIS
++-----------+-----------+---------------+-------+-------+-------+--------+-------+--------+
+| Interface | Direction | Register Mode | TDATA | TKEEP | TLAST | TREADY | TSTRB | TVALID |
++-----------+-----------+---------------+-------+-------+-------+--------+-------+--------+
+| m_out     | out       | both          | 32    | 4     | 1     | 1      | 4     | 1      |
+| s_in      | in        | both          | 32    | 4     | 1     | 1      | 4     | 1      |
++-----------+-----------+---------------+-------+-------+-------+--------+-------+--------+
+
+* TOP LEVEL CONTROL
++-----------+------------+-----------+
+| Interface | Type       | Ports     |
++-----------+------------+-----------+
+| ap_clk    | clock      | ap_clk    |
+| ap_rst_n  | reset      | ap_rst_n  |
+| interrupt | interrupt  | interrupt |
+| ap_ctrl   | ap_ctrl_hs |           |
++-----------+------------+-----------+
+
+
+================================================================
+== SW I/O Information
+================================================================
+* Top Function Arguments
++----------+-----------+-----------------------------------------------------------------------------+
+| Argument | Direction | Datatype                                                                    |
++----------+-----------+-----------------------------------------------------------------------------+
+| s_in     | in        | stream<hls::axis<ap_int<32>, 0UL, 0UL, 0UL, (unsigned char)'8', false>, 0>& |
+| m_out    | out       | stream<hls::axis<ap_int<32>, 0UL, 0UL, 0UL, (unsigned char)'8', false>, 0>& |
+| halted   | out       | ap_uint<1>&                                                                 |
+| error    | out       | ap_uint<8>&                                                                 |
+| tx_id    | out       | ap_uint<16>&                                                                |
++----------+-----------+-----------------------------------------------------------------------------+
+
+* SW-to-HW Mapping
++----------+---------------+-----------+---------------------------------------+
+| Argument | HW Interface  | HW Type   | HW Info                               |
++----------+---------------+-----------+---------------------------------------+
+| s_in     | s_in          | interface |                                       |
+| m_out    | m_out         | interface |                                       |
+| halted   | s_axi_control | register  | name=halted offset=0x10 range=32      |
+| halted   | s_axi_control | register  | name=halted_ctrl offset=0x14 range=32 |
+| error    | s_axi_control | register  | name=error offset=0x20 range=32       |
+| error    | s_axi_control | register  | name=error_ctrl offset=0x24 range=32  |
+| tx_id    | s_axi_control | register  | name=tx_id offset=0x30 range=32       |
+| tx_id    | s_axi_control | register  | name=tx_id_ctrl offset=0x34 range=32  |
++----------+---------------+-----------+---------------------------------------+
+
+
+================================================================
+== M_AXI Burst Information
+================================================================
+ Note: All burst requests might be further partitioned into multiple requests during RTL generation based on max_read_burst_length or max_write_burst_length settings.
+
+
+================================================================
+== Bind Op Report
+================================================================
++-----------------------------------+-----+--------+--------------+--------+-----------+---------+
+| Name                              | DSP | Pragma | Variable     | Op     | Impl      | Latency |
++-----------------------------------+-----+--------+--------------+--------+-----------+---------+
+| + ntt                             | 2   |        |              |        |           |         |
+|   add_ln167_fu_377_p2             |     |        | add_ln167    | add    | fabric    | 0       |
+|   icmp_ln167_fu_393_p2            |     |        | icmp_ln167   | seteq  | auto      | 0       |
+|   icmp_ln176_fu_414_p2            |     |        | icmp_ln176   | setne  | auto      | 0       |
+|   select_ln176_fu_419_p3          |     |        | select_ln176 | select | auto_sel  | 0       |
+|   icmp_ln176_1_fu_426_p2          |     |        | icmp_ln176_1 | setlt  | auto      | 0       |
+|   p_1_fu_431_p2                   |     |        | p_1          | add    | fabric    | 0       |
+|   icmp_ln3_fu_437_p2              |     |        | icmp_ln3     | seteq  | auto      | 0       |
+|   icmp_ln3_1_fu_442_p2            |     |        | icmp_ln3_1   | seteq  | auto      | 0       |
+|   or_ln3_fu_447_p2                |     |        | or_ln3       | or     | auto      | 0       |
+|   s_1_fu_476_p2                   |     |        | s_1          | add    | fabric    | 0       |
+|   icmp_ln184_fu_490_p2            |     |        | icmp_ln184   | seteq  | auto      | 0       |
+|   icmp_ln189_fu_495_p2            |     |        | icmp_ln189   | seteq  | auto      | 0       |
+|  + load_poly_32_s                 | 0   |        |              |        |           |         |
+|    icmp_ln113_fu_144_p2           |     |        | icmp_ln113   | setgt  | auto      | 0       |
+|    icmp_ln118_fu_160_p2           |     |        | icmp_ln118   | setne  | auto      | 0       |
+|    and_ln118_fu_166_p2            |     |        | and_ln118    | and    | auto      | 0       |
+|    or_ln122_fu_175_p2             |     |        | or_ln122     | or     | auto      | 0       |
+|    select_ln122_fu_181_p3         |     |        | select_ln122 | select | auto_sel  | 0       |
+|    add_ln107_fu_208_p2            |     |        | add_ln107    | add    | fabric    | 0       |
+|    xor_ln107_fu_226_p2            |     |        | xor_ln107    | xor    | auto      | 0       |
+|    or_cond6_fu_232_p2             |     |        | or_cond6     | and    | auto      | 0       |
+|  + ntt_stage                      | 2   |        |              |        |           |         |
+|    lg_fu_55_p2                    |     |        | lg           | xor    | auto      | 0       |
+|    len_fu_65_p2                   |     |        | len          | shl    | auto_pipe | 0       |
+|    add_ln79_fu_84_p2              |     |        | add_ln79     | add    | fabric    | 0       |
+|    add_ln80_fu_90_p2              |     |        | add_ln80     | add    | fabric    | 0       |
+|    shl_ln81_fu_75_p2              |     |        | shl_ln81     | shl    | auto_pipe | 0       |
+|   + ntt_stage_Pipeline_STAGE_BFLY | 2   |        |              |        |           |         |
+|     icmp_ln76_fu_213_p2           |     |        | icmp_ln76    | seteq  | auto      | 0       |
+|     b_5_fu_219_p2                 |     |        | b_5          | add    | fabric    | 0       |
+|     grp_fu_225_p2                 |     |        | grp          | lshr   | auto_pipe | 0       |
+|     k_fu_242_p2                   |     |        | k            | and    | auto      | 0       |
+|     shl_ln80_fu_247_p2            |     |        | shl_ln80     | shl    | auto_pipe | 0       |
+|     or_ln80_fu_256_p2             |     |        | or_ln80      | or     | auto      | 0       |
+|     add_ln81_fu_270_p2            |     |        | add_ln81     | add    | fabric    | 0       |
+|     add_ln83_fu_285_p2            |     |        | add_ln83     | add    | fabric    | 0       |
+|     mul_23ns_23ns_46_1_1_U6       | 2   |        | p            | mul    | auto      | 0       |
+|     sub_ln49_fu_376_p2            |     |        | sub_ln49     | sub    | fabric    | 0       |
+|     r2_fu_392_p2                  |     |        | r2           | add    | fabric    | 0       |
+|     sub_ln52_fu_434_p2            |     |        | sub_ln52     | sub    | fabric    | 0       |
+|     r3_fu_448_p2                  |     |        | r3           | add    | fabric    | 0       |
+|     icmp_ln53_fu_458_p2           |     |        | icmp_ln53    | setgt  | auto      | 0       |
+|     add_ln53_fu_463_p2            |     |        | add_ln53     | add    | fabric    | 0       |
+|     t_fu_468_p3                   |     |        | t            | select | auto_sel  | 0       |
+|     s_fu_483_p2                   |     |        | s            | add    | fabric    | 0       |
+|     icmp_ln59_fu_493_p2           |     |        | icmp_ln59    | setgt  | auto      | 0       |
+|     add_ln59_fu_498_p2            |     |        | add_ln59     | add    | fabric    | 0       |
+|     select_ln59_fu_503_p3         |     |        | select_ln59  | select | auto_sel  | 0       |
+|     icmp_ln65_fu_521_p2           |     |        | icmp_ln65    | setgt  | auto      | 0       |
+|     add_ln65_fu_531_p2            |     |        | add_ln65     | add    | fabric    | 0       |
+|     select_ln65_fu_537_p3         |     |        | select_ln65  | select | auto_sel  | 0       |
+|  + store_poly_32_s                | 0   |        |              |        |           |         |
+|    icmp_ln134_fu_107_p2           |     |        | icmp_ln134   | seteq  | auto      | 0       |
+|    add_ln134_fu_113_p2            |     |        | add_ln134    | add    | fabric    | 0       |
+|    tlast_fu_124_p2                |     |        | tlast        | seteq  | auto      | 0       |
++-----------------------------------+-----+--------+--------------+--------+-----------+---------+
+
+
+================================================================
+== Storage Report
+================================================================
++-----------------------------------+---------------+-----------+------+------+--------+--------+----------------+------+---------+------------------+
+| Name                              | Usage         | Type      | BRAM | URAM | CE_REG | Pragma | Variable       | Impl | Latency | Bitwidth, Depth, |
+|                                   |               |           |      |      |        |        |                |      |         | Banks            |
++-----------------------------------+---------------+-----------+------+------+--------+--------+----------------+------+---------+------------------+
+| + ntt                             |               |           | 5    | 0    |        |        |                |      |         |                  |
+|   control_s_axi_U                 | interface     | s_axilite |      |      |        |        |                |      |         |                  |
+|   a_U                             | ram_t2p array |           | 2    |      | N      | yes    | a              | bram | 1       | 23, 256, 1       |
+|   b_U                             | ram_t2p array |           | 2    |      | N      | yes    | b              | bram | 1       | 23, 256, 1       |
+|  + ntt_stage                      |               |           | 1    | 0    |        |        |                |      |         |                  |
+|   + ntt_stage_Pipeline_STAGE_BFLY |               |           | 1    | 0    |        |        |                |      |         |                  |
+|     ntt_impl_ZETAS_U              | rom_1p        |           | 1    |      | N      |        | ntt_impl_ZETAS | auto | 1       | 23, 256, 1       |
++-----------------------------------+---------------+-----------+------+------+--------+--------+----------------+------+---------+------------------+
+
+
+================================================================
+== Pragma Report
+================================================================
+* Ignored Pragmas
++--------+---------+----------------------------------------------------------------------+-----------------+
+| Type   | Options | Location                                                             | Messages        |
++--------+---------+----------------------------------------------------------------------+-----------------+
+| INLINE |         | in run_lane (include/uint32_array_utils.h:51)                        | Not implemented |
+| INLINE |         | in run (include/uint32_array_utils.h:58)                             | Not implemented |
+| INLINE |         | in write_lane (include/uint32_array_utils.h:78)                      | Not implemented |
+| INLINE |         | in run (include/uint32_array_utils.h:84)                             | Not implemented |
+| INLINE |         | in run (include/uint32_array_utils.h:104)                            | Not implemented |
+| INLINE |         | in run (include/uint32_array_utils.h:152)                            | Not implemented |
+| INLINE |         | in run (include/uint32_array_utils.h:196)                            | Not implemented |
+| INLINE |         | in run (include/uint32_array_utils.h:223)                            | Not implemented |
+| INLINE |         | in read_array_lane (include/uint32_array_utils.h:238)                | Not implemented |
+| INLINE |         | in write_array_lane (include/uint32_array_utils.h:244)               | Not implemented |
+| INLINE |         | in read_stream_lane (include/uint32_array_utils.h:250)               | Not implemented |
+| INLINE |         | in write_stream_lane (include/uint32_array_utils.h:256)              | Not implemented |
+| INLINE |         | in read_axi4_stream_lane (include/uint32_array_utils.h:268)          | Not implemented |
+| INLINE |         | in read_framed_stream_lane (include/uint32_array_utils.h:284)        | Not implemented |
+| INLINE |         | in read_framed_stream_lane (include/uint32_array_utils.h:290)        | Not implemented |
+| INLINE |         | in write_framed_stream_lane (include/uint32_array_utils.h:297)       | Not implemented |
+| INLINE |         | in read_boundary_lane (include/uint32_array_utils.h:307)             | Not implemented |
+| INLINE |         | in read_boundary_lane (include/uint32_array_utils.h:313)             | Not implemented |
+| INLINE |         | in write_boundary_lane (include/uint32_array_utils.h:319)            | Not implemented |
+| INLINE |         | in write_boundary_lane (include/uint32_array_utils.h:325)            | Not implemented |
+| INLINE |         | in elem_read (include/uint32_array_utils.h:336)                      | Not implemented |
+| INLINE |         | in elem_write (include/uint32_array_utils.h:343)                     | Not implemented |
+| INLINE |         | in read_array_slice_dispatch (include/uint32_array_utils.h:382)      | Not implemented |
+| UNROLL |         | in read_array_slice_dispatch (include/uint32_array_utils.h:393)      | Not implemented |
+| UNROLL |         | in read_array_slice_dispatch (include/uint32_array_utils.h:408)      | Not implemented |
+| UNROLL |         | in read_array_slice_dispatch (include/uint32_array_utils.h:418)      | Not implemented |
+| INLINE |         | in read_array_slice_dispatch (include/uint32_array_utils.h:427)      | Not implemented |
+| INLINE |         | in read_array_slice (include/uint32_array_utils.h:439)               | Not implemented |
+| INLINE |         | in write_array_slice_dispatch (include/uint32_array_utils.h:456)     | Not implemented |
+| UNROLL |         | in write_array_slice_dispatch (include/uint32_array_utils.h:466)     | Not implemented |
+| INLINE |         | in write_array_slice_dispatch (include/uint32_array_utils.h:479)     | Not implemented |
+| INLINE |         | in write_array_slice (include/uint32_array_utils.h:491)              | Not implemented |
+| INLINE |         | in write_array_slice_rmw_dispatch (include/uint32_array_utils.h:507) | Not implemented |
+| UNROLL |         | in write_array_slice_rmw_dispatch (include/uint32_array_utils.h:519) | Not implemented |
+| UNROLL |         | in write_array_slice_rmw_dispatch (include/uint32_array_utils.h:534) | Not implemented |
+| UNROLL |         | in write_array_slice_rmw_dispatch (include/uint32_array_utils.h:547) | Not implemented |
+| INLINE |         | in write_array_slice_rmw_dispatch (include/uint32_array_utils.h:558) | Not implemented |
+| INLINE |         | in write_array_slice_rmw (include/uint32_array_utils.h:570)          | Not implemented |
+| INLINE |         | in read_array_slice (include/uint32_array_utils.h:580)               | Not implemented |
+| INLINE |         | in write_array_slice (include/uint32_array_utils.h:586)              | Not implemented |
+| INLINE |         | in read_stream (include/uint32_array_utils.h:592)                    | Not implemented |
+| INLINE |         | in read_axi4_stream (include/uint32_array_utils.h:603)               | Not implemented |
+| INLINE |         | in read_axi4_stream (include/uint32_array_utils.h:630)               | Not implemented |
+| INLINE |         | in read_axi4_stream (include/uint32_array_utils.h:637)               | Not implemented |
+| INLINE |         | in read_axi4_stream (include/uint32_array_utils.h:644)               | Not implemented |
+| INLINE |         | in write_stream (include/uint32_array_utils.h:652)                   | Not implemented |
+| INLINE |         | in write_axi4_stream (include/uint32_array_utils.h:663)              | Not implemented |
+| INLINE |         | in read_framed_stream (include/uint32_array_utils.h:677)             | Not implemented |
+| INLINE |         | in read_framed_stream (include/uint32_array_utils.h:693)             | Not implemented |
+| INLINE |         | in write_framed_stream (include/uint32_array_utils.h:700)            | Not implemented |
++--------+---------+----------------------------------------------------------------------+-----------------+
+
+* Implemented Pragmas
++----------------+--------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Type           | Options            | Location                                                                                                                                                                                                                |
++----------------+--------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| INLINE         |                    | in _zn18uint32_array_utils26read_axi4_stream_elem_implili32ee3runern3hls6streamins2_4axisi6ap_intili32eelm0elm0elm0elh56elb0eeeli0eeep7ap_uintili32eern11streamutils12tlast_statusei (include/uint32_array_utils.h:126) |
+| INLINE         |                    | in _zn18uint32_array_utils27write_axi4_stream_elem_implili32ee3runern3hls6streamins2_4axisi6ap_intili32eelm0elm0elm0elh56elb0eeeli0eeepk7ap_uintili32eebi (include/uint32_array_utils.h:174)                            |
+| INLINE         |                    | in _zn18uint32_array_utils21read_axi4_stream_laneili32eeevrn3hls6streamins1_4axisi6ap_intixt_eelm0elm0elm0elh56elb0eeeli0eeep7ap_uintili32eeirn11streamutils12tlast_statuse (include/uint32_array_utils.h:262)          |
+| INLINE         |                    | in _zn18uint32_array_utils22write_axi4_stream_laneili32eeevpk7ap_uintili32eern3hls6streamins5_4axisi6ap_intixt_eelm0elm0elm0elh56elb0eeeli0eeebi (include/uint32_array_utils.h:275)                                     |
+| INLINE         |                    | in _zn8ntt_impll4codee8ntterror (ntt_body_impl.tpp:34)                                                                                                                                                                  |
+| INLINE         |                    | in _zn8ntt_impll6mulmode7ap_uintili23ees1_ (ntt_body_impl.tpp:42)                                                                                                                                                       |
+| INLINE         |                    | in _zn8ntt_impll6addmode7ap_uintili23ees1_ (ntt_body_impl.tpp:57)                                                                                                                                                       |
+| INLINE         |                    | in _zn8ntt_impll6submode7ap_uintili23ees1_ (ntt_body_impl.tpp:63)                                                                                                                                                       |
+| INLINE         | off                | in ntt_impl::ntt_stage (ntt_body_impl.tpp:72)                                                                                                                                                                           |
+| INLINE         | off                | in ntt_impl::load_poly<32> (ntt_body_impl.tpp:104)                                                                                                                                                                      |
+| INLINE         | off                | in ntt_impl::store_poly<32> (ntt_body_impl.tpp:132)                                                                                                                                                                     |
+| INLINE         |                    | in _zn8ntt_impl4bodyili32eli32eeevrn3hls6streamins1_4axisi6ap_intixt_eelm0elm0elm0elh56elb0eeeli0eeerns2_ins3_is4_ixt0_eelm0elm0elm0elh56elb0eeeli0eeer7ap_uintili1eersd_ili8eersd_ili16ee (ntt_body_impl.tpp:147)      |
+| LOOP_TRIPCOUNT | max=16 min=1 avg=8 | in ntt (ntt_body_impl.tpp:177)                                                                                                                                                                                          |
++----------------+--------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+* Valid Pragma Syntax
++----------------+--------------------------------------+----------------------------------------------------------------------+
+| Type           | Options                              | Location                                                             |
++----------------+--------------------------------------+----------------------------------------------------------------------+
+| INTERFACE      | axis port=s_in                       | in ntt (gen/ntt.cpp:10)                                              |
+| INTERFACE      | axis port=m_out                      | in ntt (gen/ntt.cpp:11)                                              |
+| INTERFACE      | s_axilite port=halted bundle=control | in ntt (gen/ntt.cpp:12)                                              |
+| INTERFACE      | s_axilite port=error bundle=control  | in ntt (gen/ntt.cpp:13)                                              |
+| INTERFACE      | s_axilite port=tx_id bundle=control  | in ntt (gen/ntt.cpp:14)                                              |
+| INTERFACE      | s_axilite port=return bundle=control | in ntt (gen/ntt.cpp:15)                                              |
+| PIPELINE       | ii=1                                 | in flush_axi4_stream_to_tlast (include/streamutils_hls.h:191)        |
+| INLINE         |                                      | in run (include/uint32_array_utils.h:126)                            |
+| INLINE         |                                      | in run (include/uint32_array_utils.h:174)                            |
+| INLINE         |                                      | in read_axi4_stream_lane (include/uint32_array_utils.h:262)          |
+| INLINE         |                                      | in write_axi4_stream_lane (include/uint32_array_utils.h:275)         |
+| PIPELINE       | ii=1                                 | in read_array_slice_dispatch (include/uint32_array_utils.h:404)      |
+| PIPELINE       | ii=1                                 | in read_array_slice_dispatch (include/uint32_array_utils.h:432)      |
+| PIPELINE       | ii=1                                 | in write_array_slice_dispatch (include/uint32_array_utils.h:463)     |
+| PIPELINE       | ii=1                                 | in write_array_slice_dispatch (include/uint32_array_utils.h:484)     |
+| PIPELINE       | ii=1                                 | in write_array_slice_rmw_dispatch (include/uint32_array_utils.h:531) |
+| PIPELINE       | ii=1                                 | in write_array_slice_rmw_dispatch (include/uint32_array_utils.h:563) |
+| INLINE         |                                      | in code (ntt_body_impl.tpp:34)                                       |
+| INLINE         |                                      | in mulmod (ntt_body_impl.tpp:42)                                     |
+| INLINE         |                                      | in addmod (ntt_body_impl.tpp:57)                                     |
+| INLINE         |                                      | in submod (ntt_body_impl.tpp:63)                                     |
+| INLINE         | off                                  | in ntt_stage (ntt_body_impl.tpp:72)                                  |
+| PIPELINE       | ii=1                                 | in ntt_stage (ntt_body_impl.tpp:77)                                  |
+| INLINE         | off                                  | in load_poly (ntt_body_impl.tpp:104)                                 |
+| PIPELINE       | ii=1                                 | in load_poly (ntt_body_impl.tpp:108)                                 |
+| INLINE         | off                                  | in store_poly (ntt_body_impl.tpp:132)                                |
+| PIPELINE       | ii=1                                 | in store_poly (ntt_body_impl.tpp:135)                                |
+| INLINE         |                                      | in body (ntt_body_impl.tpp:147)                                      |
+| BIND_STORAGE   | variable=a type=ram_t2p impl=bram    | in body (ntt_body_impl.tpp:154)                                      |
+| BIND_STORAGE   | variable=b type=ram_t2p impl=bram    | in body (ntt_body_impl.tpp:155)                                      |
+| LOOP_TRIPCOUNT | min=1 max=16                         | in body (ntt_body_impl.tpp:177)                                      |
++----------------+--------------------------------------+----------------------------------------------------------------------+
+
+
