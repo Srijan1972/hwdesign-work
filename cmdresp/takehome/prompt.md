@@ -65,6 +65,13 @@ commands, or between activations.
 - `END`: a header alone. The kernel returns with a clear status. END's tx_id
   and nbatch are ignored: an END with any nbatch is not an error.
 
+The host must end every activation with an END header. Input that stops
+before END, or before all 256 words of a polynomial have arrived (with no
+early TLAST), is outside the host contract: it is not an error the kernel
+reports, the kernel waits for the missing words indefinitely, and the host
+recovers by resetting the accelerator and its stream path. No scenario sends
+such input.
+
 nbatch = 0 and nbatch > 16 are invalid (BAD_PARAM). A cmd_type that is neither
 NTT nor END is invalid (BAD_CMD); the value 0 is not a command, so an
 all-zero header word is BAD_CMD, not END. Both are checked from the header,
@@ -173,3 +180,4 @@ this folder to be committed: a reviewer opens them to check results.md.
 | 2 | Latency is Vitis's ap_start-to-ap_done cosim latency, including END; "one butterfly per clock" is II = 1 in synthesis; polynomials may be processed one at a time | Run 1 had to interpret how the throughput targets are measured (Assumptions 4, 5, 7); I kept its reading |
 | 2 | Opcode 0 is not a command (BAD_CMD); the stream is 32 bits only | Run 1 chose both (Assumptions 6, 8); I kept them |
 | 2 | Added the scenarios run 1 added on its own, and one with END nbatch != 0 and headers without TLAST | Run 1's Assumption 9 added three error scenarios; the new rules above need a passing scenario of their own |
+| 3 | The host must end every activation with END; input that stops before END or inside a polynomial is outside the host contract, and the kernel waits for it | Run 2 had to assume the host always sends END and that truncated input blocks the kernel (its Assumption 5); I kept its choice and made it a host requirement |
