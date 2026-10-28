@@ -66,6 +66,7 @@ class Cmd:
     polys: tuple[Poly, ...]
     cmd_type: int = int(NttCmd.NTT)
     nbatch: int | None = None
+    hdr_tlast: bool = True           # header TLAST is not checked (prompt v2): either is valid
 
     @property
     def hdr_nbatch(self) -> int:
@@ -78,6 +79,8 @@ class Scenario:
 
     cmds: list[Cmd]
     end: bool = True
+    end_nbatch: int = 0              # END's nbatch is ignored (prompt v2), so any value is valid
+    end_tlast: bool = True
     purpose: str = ""
     target: str | None = None        # the throughput target this activation measures
     after_error: str | None = None   # the error scenario this fresh activation recovers from
@@ -97,11 +100,11 @@ def stimulus(sc: Scenario) -> list[StreamBurst]:
     """The input stream: each command's header and its polynomials' bursts, then END."""
     bursts: list[StreamBurst] = []
     for c in sc.cmds:
-        bursts.append(StreamBurst(_hdr(c.cmd_type, c.tx_id, c.hdr_nbatch)))
+        bursts.append(StreamBurst(_hdr(c.cmd_type, c.tx_id, c.hdr_nbatch), c.hdr_tlast))
         for p in c.polys:
             bursts.append(StreamBurst(_words(p.coeffs[:p.sent]), p.tlast))
     if sc.end:
-        bursts.append(StreamBurst(_hdr(int(NttCmd.END))))
+        bursts.append(StreamBurst(_hdr(int(NttCmd.END), 0, sc.end_nbatch), sc.end_tlast))
     return bursts
 
 
@@ -203,6 +206,11 @@ def scenarios() -> dict[str, Scenario]:
     s["edge_values"] = Scenario([Cmd(40, tuple(Poly(x) for x in edge))],
                                 purpose="all q-1, all 0, alternating 0/q-1, and the impulses "
                                         "of the hand-computed examples, in one batch of 8")
+    s["lenient_headers"] = Scenario([Cmd(45, polys(2), hdr_tlast=False),
+                                     Cmd(46, polys(1), hdr_tlast=False)],
+                                    end_nbatch=200, end_tlast=False,
+                                    purpose="command headers without TLAST, and END with "
+                                            "nbatch = 200: not errors")
     s["end_only"] = Scenario([], purpose="END alone: no output, clean status")
 
     # --- one activation per error, each followed by a fresh activation -------------------------

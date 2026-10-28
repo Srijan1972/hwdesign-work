@@ -3,6 +3,7 @@
   "batch16": "PASS",
   "param_change": "PASS",
   "edge_values": "PASS",
+  "lenient_headers": "PASS",
   "end_only": "PASS",
   "bad_cmd": "PASS",
   "bad_cmd_recover": "PASS",

@@ -5,6 +5,7 @@
       "batch16": "PASS",
       "param_change": "PASS",
       "edge_values": "PASS",
+      "lenient_headers": "PASS",
       "end_only": "PASS",
       "bad_cmd": "PASS",
       "bad_cmd_recover": "PASS",
@@ -36,6 +37,7 @@
       "batch16": "PASS",
       "param_change": "PASS",
       "edge_values": "PASS",
+      "lenient_headers": "PASS",
       "end_only": "PASS",
       "bad_cmd": "PASS",
       "bad_cmd_recover": "PASS",
@@ -67,6 +69,7 @@
       "batch16": "PASS",
       "param_change": "PASS",
       "edge_values": "PASS",
+      "lenient_headers": "PASS",
       "end_only": "PASS",
       "bad_cmd": "PASS",
       "bad_cmd_recover": "PASS",
@@ -96,49 +99,50 @@
   },
   "latency": {
     "per_activation_cycles": {
-      "single": 2662,
-      "batch16": 42457,
-      "param_change": 58390,
-      "edge_values": 21233,
+      "single": 1628,
+      "batch16": 25928,
+      "param_change": 35660,
+      "edge_values": 12968,
+      "lenient_headers": 4872,
       "end_only": 4,
       "bad_cmd": 4,
-      "bad_cmd_recover": 5315,
+      "bad_cmd_recover": 3250,
       "bad_cmd_zero": 4,
-      "bad_cmd_zero_recover": 5315,
+      "bad_cmd_zero_recover": 3250,
       "bad_param_0": 4,
-      "bad_param_0_recover": 5315,
+      "bad_param_0_recover": 3250,
       "bad_param_17": 4,
-      "bad_param_17_recover": 5315,
-      "bad_coeff_q": 2763,
-      "bad_coeff_q_recover": 5315,
-      "bad_coeff_ffff": 2918,
-      "bad_coeff_ffff_recover": 5315,
-      "tlast_early": 5415,
-      "tlast_early_recover": 5315,
-      "tlast_missing": 5312,
-      "tlast_missing_recover": 5315,
-      "tlast_missing_first": 2659,
-      "tlast_missing_first_recover": 5315,
-      "coeff_and_early": 59,
-      "coeff_and_early_recover": 5315,
-      "coeff_and_missing": 265,
-      "coeff_and_missing_recover": 5315,
-      "second_cmd_error": 7983,
-      "second_cmd_error_recover": 5315
+      "bad_param_17_recover": 3250,
+      "bad_coeff_q": 1729,
+      "bad_coeff_q_recover": 3250,
+      "bad_coeff_ffff": 1884,
+      "bad_coeff_ffff_recover": 3250,
+      "tlast_early": 3348,
+      "tlast_early_recover": 3250,
+      "tlast_missing": 3245,
+      "tlast_missing_recover": 3250,
+      "tlast_missing_first": 1625,
+      "tlast_missing_first_recover": 3250,
+      "coeff_and_early": 58,
+      "coeff_and_early_recover": 3250,
+      "coeff_and_missing": 264,
+      "coeff_and_missing_recover": 3250,
+      "second_cmd_error": 4882,
+      "second_cmd_error_recover": 3250
     },
     "targets": {
       "nbatch1": {
         "scenario": "single",
         "required_max_cycles": 1700,
-        "measured_cycles": 2662,
-        "verdict": "FAIL",
+        "measured_cycles": 1628,
+        "verdict": "PASS",
         "source": "reports/result.transaction.rpt"
       },
       "nbatch16": {
         "scenario": "batch16",
         "required_max_cycles": 27200,
-        "measured_cycles": 42457,
-        "verdict": "FAIL",
+        "measured_cycles": 25928,
+        "verdict": "PASS",
         "source": "reports/result.transaction.rpt"
       }
     },
@@ -148,9 +152,9 @@
     "top_name": "ntt",
     "top": {
       "bram": 5,
-      "dsp": 2,
-      "ff": 800,
-      "lut": 1829,
+      "dsp": 4,
+      "ff": 1676,
+      "lut": 3162,
       "uram": 0
     },
     "available": {
@@ -168,17 +172,24 @@
         "rtl_module": "ntt",
         "resources": {
           "bram": 5,
-          "dsp": 2,
-          "ff": 800,
-          "lut": 1829,
+          "dsp": 4,
+          "ff": 1676,
+          "lut": 3162,
           "uram": 0
         },
         "subblocks": {
-          "ntt_stage_Pipeline_STAGE_BFLY": {
-            "bram": 1,
+          "ntt_transform_Pipeline_STAGE_BFLY": {
             "dsp": 2,
-            "ff": 471,
-            "lut": 785,
+            "ff": 660,
+            "lut": 951,
+            "bram": 0,
+            "uram": 0
+          },
+          "ntt_transform_Pipeline_STAGE_BFLY1": {
+            "dsp": 2,
+            "ff": 666,
+            "lut": 948,
+            "bram": 0,
             "uram": 0
           }
         }
@@ -187,30 +198,30 @@
     "unclaimed": {
       "load_poly_32_s": {
         "ff": 18,
-        "lut": 190,
+        "lut": 192,
         "bram": 0,
         "dsp": 0,
         "uram": 0
       },
-      "ntt_stage": {
+      "ntt_transform": {
         "bram": 1,
-        "dsp": 2,
-        "ff": 512,
-        "lut": 869,
+        "dsp": 4,
+        "ff": 1403,
+        "lut": 2195,
         "uram": 0
       },
       "store_poly_32_s": {
-        "ff": 13,
-        "lut": 90,
+        "ff": 14,
+        "lut": 115,
         "bram": 0,
         "dsp": 0,
         "uram": 0
       }
     },
     "module_sum": {
-      "lut": 1829,
-      "ff": 800,
-      "dsp": 2,
+      "lut": 3162,
+      "ff": 1676,
+      "dsp": 4,
       "bram": 5,
       "uram": 0
     },
@@ -228,5 +239,5 @@
     "synth_seconds": 0.0,
     "filed_into": null
   },
-  "loops": "PipelineII,PipelineDepth,TripCountMin,TripCountMax,LatencyMin,LatencyMax\n1,1,0,256,0,255\n2,10,,,263,263\n1,2,,,256,256\n,2 ~ 42778,,,,\n"
+  "loops": "PipelineII,PipelineDepth,TripCountMin,TripCountMax,LatencyMin,LatencyMax\n1,1,0,256,0,255\n1,9,,,135,135\n1,9,,,135,135\n,279,,,1116,1116\n1,2,,,256,256\n,2 ~ 26251,,,,\n"
 }

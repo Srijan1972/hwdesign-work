@@ -2,9 +2,9 @@
   "top_name": "ntt",
   "top": {
     "bram": 5,
-    "dsp": 2,
-    "ff": 800,
-    "lut": 1829,
+    "dsp": 4,
+    "ff": 1676,
+    "lut": 3162,
     "uram": 0
   },
   "available": {
@@ -22,17 +22,24 @@
       "rtl_module": "ntt",
       "resources": {
         "bram": 5,
-        "dsp": 2,
-        "ff": 800,
-        "lut": 1829,
+        "dsp": 4,
+        "ff": 1676,
+        "lut": 3162,
         "uram": 0
       },
       "subblocks": {
-        "ntt_stage_Pipeline_STAGE_BFLY": {
-          "bram": 1,
+        "ntt_transform_Pipeline_STAGE_BFLY": {
           "dsp": 2,
-          "ff": 471,
-          "lut": 785,
+          "ff": 660,
+          "lut": 951,
+          "bram": 0,
+          "uram": 0
+        },
+        "ntt_transform_Pipeline_STAGE_BFLY1": {
+          "dsp": 2,
+          "ff": 666,
+          "lut": 948,
+          "bram": 0,
           "uram": 0
         }
       }
@@ -41,30 +48,30 @@
   "unclaimed": {
     "load_poly_32_s": {
       "ff": 18,
-      "lut": 190,
+      "lut": 192,
       "bram": 0,
       "dsp": 0,
       "uram": 0
     },
-    "ntt_stage": {
+    "ntt_transform": {
       "bram": 1,
-      "dsp": 2,
-      "ff": 512,
-      "lut": 869,
+      "dsp": 4,
+      "ff": 1403,
+      "lut": 2195,
       "uram": 0
     },
     "store_poly_32_s": {
-      "ff": 13,
-      "lut": 90,
+      "ff": 14,
+      "lut": 115,
       "bram": 0,
       "dsp": 0,
       "uram": 0
     }
   },
   "module_sum": {
-    "lut": 1829,
-    "ff": 800,
-    "dsp": 2,
+    "lut": 3162,
+    "ff": 1676,
+    "dsp": 4,
     "bram": 5,
     "uram": 0
   },

@@ -65,11 +65,28 @@ static inline coeff_t submod(coeff_t a, coeff_t b) {
     return (coeff_t)((d >= Q) ? (ap_uint<24>)(d - Q) : d);
 }
 
-// One butterfly stage of FIPS 204 Algorithm 41, from `in` to `out` (ping-pong, so the loop
-// reads two words of one RAM and writes two of the other: one butterfly per clock).  Stage s has
-// len = 128 >> s and 2^s groups; group g uses ZETAS[2^s + g], which is m in Algorithm 41.
-static void ntt_stage(const coeff_t in[N], coeff_t out[N], int s) {
-#pragma HLS INLINE off
+// The buffers are banked so that no butterfly touches one RAM twice.  Coefficient i lives in
+// bank parity(i) (the XOR of its 8 index bits) at address i >> 1.  A butterfly's two indices,
+// j and j + len, differ in exactly one bit, so they always sit in different banks: each stage
+// reads each input bank once and writes each output bank once per butterfly, and a simple
+// dual-port RAM per bank (one read, one write) runs it at one butterfly per clock.
+//
+// Run 1 used one 256-word RAM per buffer and wrote both butterfly outputs to it, which Vitis
+// bound as one read and one write port (RAM_T2P_BRAM_1R1W), holding the loop at II = 2.
+static const int NB = N / 2;               // words per bank
+typedef ap_uint<8> idx_t;
+
+static inline bool bank_of(idx_t i) {
+#pragma HLS INLINE
+    return i.xor_reduce();
+}
+
+// One butterfly stage of FIPS 204 Algorithm 41, from banks in0/in1 to banks out0/out1
+// (ping-pong).  Stage s has len = 128 >> s and 2^s groups; group g uses ZETAS[2^s + g], which is
+// m in Algorithm 41.
+static inline void ntt_stage(const coeff_t in0[NB], const coeff_t in1[NB],
+                             coeff_t out0[NB], coeff_t out1[NB], int s) {
+#pragma HLS INLINE
     const int lg = (LOGN - 1) - s;         // log2(len)
     const int len = 1 << lg;
 STAGE_BFLY:
@@ -77,30 +94,40 @@ STAGE_BFLY:
 #pragma HLS PIPELINE II=1
         const int grp = b >> lg;
         const int k = b & (len - 1);
-        const int j = (grp << (lg + 1)) | k;
+        const idx_t j = (grp << (lg + 1)) | k;
+        const idx_t jl = j + len;
+        const bool pj = bank_of(j);        // bank of j; j + len is in the other one
+        const idx_t i0 = pj ? jl : j;      // the index that lives in bank 0
+        const idx_t i1 = pj ? j : jl;      // ...and in bank 1
+        const coeff_t r0 = in0[i0 >> 1];
+        const coeff_t r1 = in1[i1 >> 1];
+        const coeff_t u = pj ? r1 : r0;    // w[j]
+        const coeff_t v = pj ? r0 : r1;    // w[j + len]
         const coeff_t z = (coeff_t)ZETAS[(1 << s) + grp];
-        const coeff_t u = in[j];
-        const coeff_t t = mulmod(z, in[j + len]);
-        out[j] = addmod(u, t);
-        out[j + len] = submod(u, t);
+        const coeff_t t = mulmod(z, v);
+        const coeff_t x = addmod(u, t);    // new w[j]
+        const coeff_t y = submod(u, t);    // new w[j + len]
+        out0[i0 >> 1] = pj ? y : x;
+        out1[i1 >> 1] = pj ? x : y;
     }
 }
 
 // The 8 stages: a -> b -> a ... ; after the eighth the result is back in a.
-static void ntt_transform(coeff_t a[N], coeff_t b[N]) {
+static void ntt_transform(coeff_t a0[NB], coeff_t a1[NB], coeff_t b0[NB], coeff_t b1[NB]) {
 NTT_STAGES:
     for (int s = 0; s < LOGN; s += 2) {
-        ntt_stage(a, b, s);
-        ntt_stage(b, a, s + 1);
+        ntt_stage(a0, a1, b0, b1, s);
+        ntt_stage(b0, b1, a0, a1, s + 1);
     }
 }
 
-// Read one polynomial's burst into a.  Stops at the first bad word, reading nothing after it:
-// a word >= q is BAD_COEFF (checked before its TLAST, so it wins on the same word), a TLAST
-// before word 255 is TLAST_EARLY.  Word 255 without TLAST is TLAST_MISSING, returned after the
-// polynomial is complete.
+// Read one polynomial's burst into banks a0/a1.  Stops at the first bad word, reading nothing
+// after it: a word >= q is BAD_COEFF (checked before its TLAST, so it wins on the same word), a
+// TLAST before word 255 is TLAST_EARLY.  Word 255 without TLAST is TLAST_MISSING, returned after
+// the polynomial is complete.
 template <int in_bw>
-static ap_uint<8> load_poly(hls::stream<streamutils::axi4s_word<in_bw>>& s_in, coeff_t a[N]) {
+static ap_uint<8> load_poly(hls::stream<streamutils::axi4s_word<in_bw>>& s_in,
+                            coeff_t a0[NB], coeff_t a1[NB]) {
 #pragma HLS INLINE off
     ap_uint<8> err = code(NttError::NO_ERROR);
 LOAD:
@@ -114,7 +141,12 @@ LOAD:
             err = code(NttError::BAD_COEFF);
             break;
         }
-        a[k] = (coeff_t)x[0];
+        const idx_t i = k;
+        if (bank_of(i)) {
+            a1[i >> 1] = (coeff_t)x[0];
+        } else {
+            a0[i >> 1] = (coeff_t)x[0];
+        }
         if (last && k < N - 1) {
             err = code(NttError::TLAST_EARLY);
             break;
@@ -126,15 +158,19 @@ LOAD:
     return err;
 }
 
-// Write one transformed polynomial as a closed 256-word burst.
+// Write one transformed polynomial, from banks a0/a1, as a closed 256-word burst.
 template <int out_bw>
-static void store_poly(const coeff_t a[N], hls::stream<streamutils::axi4s_word<out_bw>>& m_out) {
+static void store_poly(const coeff_t a0[NB], const coeff_t a1[NB],
+                       hls::stream<streamutils::axi4s_word<out_bw>>& m_out) {
 #pragma HLS INLINE off
 STORE:
     for (int k = 0; k < N; ++k) {
 #pragma HLS PIPELINE II=1
+        const idx_t i = k;
+        const coeff_t r0 = a0[i >> 1];
+        const coeff_t r1 = a1[i >> 1];
         uint32_array_utils::value_type y[1];
-        y[0] = a[k];
+        y[0] = bank_of(i) ? r1 : r0;
         uint32_array_utils::write_axi4_stream_lane<out_bw>(y, m_out, k == N - 1, 1);
     }
 }
@@ -149,10 +185,12 @@ void body(hls::stream<streamutils::axi4s_word<in_bw>>& s_in,
     error = code(NttError::NO_ERROR);
     tx_id = 0;
 
-    coeff_t a[N];
-    coeff_t b[N];
-#pragma HLS BIND_STORAGE variable=a type=ram_t2p impl=bram
-#pragma HLS BIND_STORAGE variable=b type=ram_t2p impl=bram
+    coeff_t a0[NB], a1[NB];                       // buffer a, banked by index parity
+    coeff_t b0[NB], b1[NB];                       // buffer b, likewise
+#pragma HLS BIND_STORAGE variable=a0 type=ram_s2p impl=bram
+#pragma HLS BIND_STORAGE variable=a1 type=ram_s2p impl=bram
+#pragma HLS BIND_STORAGE variable=b0 type=ram_s2p impl=bram
+#pragma HLS BIND_STORAGE variable=b1 type=ram_s2p impl=bram
 
 CMDS:
     while (true) {
@@ -175,12 +213,12 @@ CMDS:
         POLYS:
             for (int p = 0; p < hdr.nbatch; ++p) {
 #pragma HLS LOOP_TRIPCOUNT min=1 max=16
-                err = load_poly<in_bw>(s_in, a);
+                err = load_poly<in_bw>(s_in, a0, a1);
                 if (err == code(NttError::BAD_COEFF) || err == code(NttError::TLAST_EARLY)) {
                     break;                        // nothing output for this polynomial
                 }
-                ntt_transform(a, b);
-                store_poly<out_bw>(a, m_out);
+                ntt_transform(a0, a1, b0, b1);
+                store_poly<out_bw>(a0, a1, m_out);
                 if (err != code(NttError::NO_ERROR)) {
                     break;                        // TLAST_MISSING: halt after its output
                 }
