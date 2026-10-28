@@ -1,7 +1,7 @@
 
 ****** vitis-run v2026.1 (64-bit)
   **** SW Build 6497934 on 2026-06-16-10:22:25
-  **** Start of session at: Wed Oct 28 10:44:59 2026
+  **** Start of session at: Wed Oct 28 10:58:36 2026
     ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
     ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
 
@@ -10,7 +10,7 @@ Sourcing Tcl script '/home/sg9109/hwdesign-work/cmdresp/takehome/run.tcl'
 INFO: [HLS 200-1510] Running: open_project -reset prj_ntt 
 WARNING: [HLS 200-2182] The 'prj_ntt' project will not automatically appear within Vitis IDE workspaces and is meant only for TCL batch use.  Please use open_component instead of open_project/open_solution to generate Vitis IDE compatible component files and directory structure.
 Resolution: For help on HLS 200-2182 see docs.amd.com/access/sources/dita/topic?Doc_Version=2026.1%20English&url=ug1448-hls-guidance&resourceid=200-2182.html
-INFO: [HLS 200-10] Opening and resetting solution '/home/sg9109/hwdesign-work/cmdresp/takehome/prj_ntt'.
+INFO: [HLS 200-10] Creating and opening solution '/home/sg9109/hwdesign-work/cmdresp/takehome/prj_ntt'.
 INFO: [HLS 200-1510] Running: set_top ntt 
 INFO: [HLS 200-1510] Running: add_files gen/ntt.cpp -cflags -I. 
 INFO: [HLS 200-10] Adding design file 'gen/ntt.cpp' to the project
@@ -66,8 +66,8 @@ scenario second_cmd_error_recover     halted=0 error=0 tx_id=0 unread_words=0
 INFO [HLS SIM]: The maximum depth reached by any hls::stream() instance in the design is 5637
 INFO: [SIM 211-1] CSim done with 0 errors.
 INFO: [SIM 211-3] *************** CSIM finish ***************
-INFO: [HLS 200-2161] Finished Command csim_design Elapsed time: 00:00:08; Allocated memory: 0.000 MB.
+INFO: [HLS 200-2161] Finished Command csim_design Elapsed time: 00:00:07; Allocated memory: 0.000 MB.
 WAVEFLOW_SUCCESS: ntt C simulation passed.
-INFO: [HLS 200-112] Total CPU user time: 9.35 seconds. Total CPU system time: 1.37 seconds. Total elapsed time: 11.26 seconds; peak allocated memory: 286.488 MB.
-INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 13s
+INFO: [HLS 200-112] Total CPU user time: 9.19 seconds. Total CPU system time: 1.21 seconds. Total elapsed time: 10.55 seconds; peak allocated memory: 286.441 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 12s
 INFO: [vitis-run 60-1662] Stopping dispatch session having empty uuid.

@@ -3,7 +3,7 @@
 Batched forward NTT of 256-coefficient polynomials over Z_q, q = 8380417 (FIPS 204 /
 ML-DSA), as a host-activated Vitis HLS kernel on the command-response pattern.  Built with
 Waveflow following `examples/stream_inband`; part xc7z020clg484-1, 10 ns clock, Vitis HLS
-2026.1 (`vitis-run`).  This is the result of run 2, against prompt version 2.  Rebuild
+2026.1 (`vitis-run`).  This is the result of run 3, against prompt version 3.  Rebuild
 everything with `python ntt_build.py --through summary`.
 
 | File | What it is |
@@ -60,7 +60,10 @@ with an `_ctrl` ap_vld register at +4.  All three are cleared at the start of ev
 **Host protocol.** Write `ap_start`; send commands, then `END`; wait for `ap_done`; read
 `halted`, `error`, `tx_id`.  Expect one response header plus `nbatch` bursts per NTT command.
 After an error, reset the stream path (the input may still hold words the kernel never read)
-before the next `ap_start`.
+before the next `ap_start`.  Every activation must end with `END`: input that stops before
+`END`, or inside a polynomial without an early TLAST, is outside the host contract, and the
+kernel waits for the missing words (prompt version 3); the host recovers by resetting the
+accelerator and its stream path.
 
 ## Design
 
@@ -174,9 +177,10 @@ rows 7 to 29).
 
 ## Assumptions
 
-Run 1's Assumptions 1 to 9 are now requirements in prompt version 2 (see its revision
-history).  What prompt version 2 still leaves to the agent, all interface or testbench
-details:
+Run 1's Assumptions 1 to 9 are now requirements in prompt version 2, and run 2's Assumption 5
+(the host always sends END; truncated input makes the kernel wait) is one in prompt version 3
+(see its revision history).  What prompt version 3 still leaves to the agent, all interface or
+testbench details:
 
 1. **The banking scheme.**  The prompt asks for separate RAM ports for each butterfly's two
    reads and two writes; the parity banking (Design) is how, at 4 DSPs and 4 BRAM_18K for
@@ -186,9 +190,6 @@ details:
 3. **The response header** echoes `nbatch` as well as `tx_id`.
 4. **The host's reset** is modeled, as the course does, by fresh streams for each activation;
    the testbench counts and discards the words a halted kernel left unread.
-5. **An input that ends without END** (or inside a polynomial) makes the kernel wait for more
-   words, as any streaming kernel does; the host always ends an activation with END, and every
-   scenario's stimulus does (the error scenarios queue it behind the bad command).
 
 ## Open Items
 
@@ -200,3 +201,4 @@ None.
 | --- | --- | --- | --- |
 | 1 | 1 | Everything, from scratch: schemas and model (`ntt.py`), model check, 29 scenarios, kernel body, testbench, build graph; C sim, synthesis and one co-sim run of all scenarios | Model check; model, C sim and co-sim bit-exact on 29/29 scenarios with every error's status and recovery; clock 8.635 ns PASS.  Throughput FAIL: butterfly loop at II = 2 (one write port shared by both butterfly outputs), 2,662 / 42,457 cycles |
 | 2 | 2 | Kernel: the two stage call sites inlined (still II = 2: Vitis bound each 256-word buffer with one read and one write port), then each buffer split into two parity banks, so a butterfly reads and writes each bank once.  New scenario `lenient_headers` for prompt v2's header and END rules (30 scenarios).  Everything rerun: model, C sim, synthesis, one co-sim run | Model check; model, C sim and co-sim bit-exact on 30/30; both butterfly loops II = 1; 1,628 / 25,928 cycles, both throughput targets PASS; clock 8.635 ns PASS.  No open items |
+| 3 | 3 | No code change: prompt v3 makes run 2's Assumption 5 (END always sent; truncated input waits) a host requirement, which the kernel already met and no scenario can exercise without hanging.  Clean rebuild of everything from fresh data, to confirm the evidence reproduces | Identical to run 2: model check; 30/30 bit-exact in model, C sim and co-sim; II = 1; 1,628 / 25,928 cycles PASS; clock 8.635 ns PASS; same resources.  Only timestamps changed in the logs and reports.  No open items |
